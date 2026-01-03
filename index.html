@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL 5대5 내전 도우미</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 LoL 5대5 내전 도우미</h1>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="team-assignment">팀 배정</button>
+                <button class="tab-btn" data-tab="fearless">피어리스 밴픽</button>
+            </div>
+        </header>
+
+        <!-- 팀 배정 섹션 -->
+        <div id="team-assignment" class="tab-content active">
+            <div class="section">
+                <h2>플레이어 입력</h2>
+
+                <!-- TOP -->
+                <div class="position-group">
+                    <h3>TOP</h3>
+                    <div class="player-inputs">
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="TOP" data-index="0" placeholder="닉네임">
+                            <select class="player-tier" data-position="TOP" data-index="0">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="TOP" data-index="1" placeholder="닉네임">
+                            <select class="player-tier" data-position="TOP" data-index="1">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JUNGLE -->
+                <div class="position-group">
+                    <h3>JUNGLE</h3>
+                    <div class="player-inputs">
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="JUNGLE" data-index="0" placeholder="닉네임">
+                            <select class="player-tier" data-position="JUNGLE" data-index="0">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="JUNGLE" data-index="1" placeholder="닉네임">
+                            <select class="player-tier" data-position="JUNGLE" data-index="1">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MID -->
+                <div class="position-group">
+                    <h3>MID</h3>
+                    <div class="player-inputs">
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="MID" data-index="0" placeholder="닉네임">
+                            <select class="player-tier" data-position="MID" data-index="0">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="MID" data-index="1" placeholder="닉네임">
+                            <select class="player-tier" data-position="MID" data-index="1">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADC -->
+                <div class="position-group">
+                    <h3>ADC</h3>
+                    <div class="player-inputs">
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="ADC" data-index="0" placeholder="닉네임">
+                            <select class="player-tier" data-position="ADC" data-index="0">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="ADC" data-index="1" placeholder="닉네임">
+                            <select class="player-tier" data-position="ADC" data-index="1">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUPPORT -->
+                <div class="position-group">
+                    <h3>SUPPORT</h3>
+                    <div class="player-inputs">
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="SUPPORT" data-index="0" placeholder="닉네임">
+                            <select class="player-tier" data-position="SUPPORT" data-index="0">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" class="player-name" data-position="SUPPORT" data-index="1" placeholder="닉네임">
+                            <select class="player-tier" data-position="SUPPORT" data-index="1">
+                                <option value="0.25">Iron IV</option>
+                                <option value="0.50">Iron III</option>
+                                <option value="0.75">Iron II</option>
+                                <option value="1.00">Iron I</option>
+                                <option value="1.25">Bronze IV</option>
+                                <option value="1.50">Bronze III</option>
+                                <option value="1.75">Bronze II</option>
+                                <option value="2.00">Bronze I</option>
+                                <option value="2.25">Silver IV</option>
+                                <option value="2.50">Silver III</option>
+                                <option value="2.75">Silver II</option>
+                                <option value="3.00">Silver I</option>
+                                <option value="3.25">Gold IV</option>
+                                <option value="3.50">Gold III</option>
+                                <option value="3.75">Gold II</option>
+                                <option value="4.00" selected>Gold I</option>
+                                <option value="4.25">Platinum IV</option>
+                                <option value="4.50">Platinum III</option>
+                                <option value="4.75">Platinum II</option>
+                                <option value="5.00">Platinum I</option>
+                                <option value="5.25">Emerald IV</option>
+                                <option value="5.50">Emerald III</option>
+                                <option value="5.75">Emerald II</option>
+                                <option value="6.00">Emerald I</option>
+                                <option value="6.25">Diamond IV</option>
+                                <option value="6.50">Diamond III</option>
+                                <option value="6.75">Diamond II</option>
+                                <option value="7.00">Diamond I</option>
+                                <option value="7.00">Master</option>
+                                <option value="8.00">Grandmaster</option>
+                                <option value="9.00">Challenger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="random-assign-btn" class="btn btn-secondary">완전 랜덤 배정</button>
+                    <button id="balanced-assign-btn" class="btn btn-primary">티어 밸런스 배정</button>
+                </div>
+            </div>
+
+            <!-- 결과 표시 -->
+            <div id="team-result" class="section" style="display: none;">
+                <h2>팀 배정 결과</h2>
+                <div class="teams-container">
+                    <div class="team blue-team">
+                        <h3>🔵 블루팀 (티어 합: <span id="blue-score">0</span>)</h3>
+                        <div id="blue-roster"></div>
+                    </div>
+                    <div class="team red-team">
+                        <h3>🔴 레드팀 (티어 합: <span id="red-score">0</span>)</h3>
+                        <div id="red-roster"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 피어리스 밴픽 섹션 -->
+        <div id="fearless" class="tab-content">
+            <div class="section">
+                <h2>피어리스 밴픽 설정</h2>
+                <div class="fearless-controls">
+                    <div class="control-group">
+                        <label>시리즈 형식:</label>
+                        <select id="series-type">
+                            <option value="3">Bo3 (3판 2선승)</option>
+                            <option value="5">Bo5 (5판 3선승)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <button id="reset-fearless-btn" class="btn btn-danger">초기화</button>
+                    </div>
+                </div>
+
+                <div class="game-info">
+                    <h3>현재: <span id="current-game">Game 1</span></h3>
+                    <p class="info-text">사용 금지된 챔피언: <span id="banned-count">0</span>개</p>
+                </div>
+
+                <div class="champion-selector">
+                    <h3>챔피언 선택</h3>
+
+                    <!-- 라인별 필터링 탭 -->
+                    <div class="role-tabs">
+                        <button class="role-tab active" data-role="ALL">전체</button>
+                        <button class="role-tab" data-role="TOP">탑</button>
+                        <button class="role-tab" data-role="JUNGLE">정글</button>
+                        <button class="role-tab" data-role="MID">미드</button>
+                        <button class="role-tab" data-role="ADC">원딜</button>
+                        <button class="role-tab" data-role="SUPPORT">서포터</button>
+                    </div>
+
+                    <input type="text" id="champion-search" placeholder="챔피언 검색...">
+                    <div id="champion-list" class="champion-grid"></div>
+                </div>
+
+                <div class="current-picks">
+                    <div class="picks-section">
+                        <h3>현재 게임 BAN <span id="ban-count" class="count-badge">0/10</span></h3>
+                        <div id="current-bans" class="champion-tags"></div>
+                    </div>
+                    <div class="picks-section">
+                        <h3>현재 게임 PICK <span id="pick-count" class="count-badge">0/10</span></h3>
+                        <div id="current-picks" class="champion-tags"></div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="confirm-game-btn" class="btn btn-primary">게임 확정 (다음 게임으로)</button>
+                    <button id="prev-game-btn" class="btn btn-secondary">이전 게임 보기</button>
+                </div>
+
+                <div id="game-history" class="section">
+                    <h3>게임 기록</h3>
+                    <div id="history-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
