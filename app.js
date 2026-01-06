@@ -272,6 +272,23 @@ CHAMPIONS_DATA.sort((a, b) => a.nameKR.localeCompare(b.nameKR, 'ko'));
 
 // ==================== 전역 상태 ====================
 
+// 방장/관전자 모드
+let sessionMode = 'host'; // 'host' 또는 'viewer'
+let sessionId = null; // 세션 ID
+
+// 게임 상태 (팀 이름 포함)
+let gameState = {
+    teamNames: {
+        a: 'TEAM A',
+        b: 'TEAM B'
+    },
+    teams: {
+        a: [],
+        b: []
+    },
+    assigned: false
+};
+
 let fearlessState = {
     seriesType: 3,
     currentGame: 1,
@@ -280,8 +297,20 @@ let fearlessState = {
     currentBans: [],
     currentPicks: [],
     selectedChampion: null,
-    currentRole: 'ALL' // 현재 선택된 라인
+    currentRole: 'ALL', // 현재 선택된 라인
+    // 밴픽 팀별 구조 (일반화)
+    bans: {
+        a: [],
+        b: []
+    },
+    picks: {
+        a: [],
+        b: []
+    }
 };
+
+// 하위 호환성을 위한 별칭 (삭제 예정)
+let teamAssignmentState = gameState;
 
 // ==================== Data Dragon 로딩 ====================
 
@@ -362,6 +391,105 @@ function handleImageError(img, championName, championId) {
     if (card) {
         card.classList.add('no-image');
     }
+}
+
+// ==================== 방장/관전자 세션 관리 ====================
+
+function initSession() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    const session = urlParams.get('session');
+
+    if (mode === 'viewer' && session) {
+        sessionMode = 'viewer';
+        sessionId = session;
+        console.log(`🔵 관전자 모드로 접속 (세션 ID: ${sessionId})`);
+    } else {
+        sessionMode = 'host';
+        sessionId = sessionId || generateSessionId();
+        console.log(`🟢 방장 모드로 접속 (세션 ID: ${sessionId})`);
+    }
+}
+
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+}
+
+function getShareLink() {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?mode=viewer&session=${sessionId}`;
+}
+
+function applyViewerMode() {
+    if (sessionMode === 'viewer') {
+        // 헤더에 관전자 모드 표시 추가
+        const header = document.querySelector('header h1');
+        header.innerHTML = '🎮 LoL 5대5 내전 도우미 <span style="color: #ffd700; font-size: 0.8em;">[관전자 모드]</span>';
+
+        // 모든 입력 요소 비활성화
+        document.querySelectorAll('input, select, button').forEach(element => {
+            if (!element.classList.contains('tab-btn')) {
+                element.disabled = true;
+                element.style.opacity = '0.6';
+                element.style.cursor = 'not-allowed';
+            }
+        });
+
+        // 탭 버튼은 활성화 (보기는 가능)
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        });
+
+        // 안내 문구 추가
+        addViewerNotice();
+    } else {
+        // 방장 모드: 링크 공유 버튼 추가
+        addShareButton();
+    }
+}
+
+function addViewerNotice() {
+    const notice = document.createElement('div');
+    notice.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: 600;
+        border-radius: 8px;
+        margin: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    `;
+    notice.innerHTML = '📺 관전자 모드 - 방장이 진행하는 내용을 실시간으로 확인하고 있습니다';
+
+    const container = document.querySelector('.container');
+    container.insertBefore(notice, container.firstChild.nextSibling);
+}
+
+function addShareButton() {
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'btn btn-primary';
+    shareBtn.innerHTML = '🔗 관전자 링크 복사';
+    shareBtn.style.cssText = 'margin-top: 10px;';
+    shareBtn.onclick = () => {
+        const link = getShareLink();
+        navigator.clipboard.writeText(link).then(() => {
+            alert(`관전자 링크가 복사되었습니다!\n\n${link}\n\n이 링크를 공유하면 다른 사람들이 실시간으로 확인할 수 있습니다.`);
+        });
+    };
+
+    const header = document.querySelector('header');
+    header.appendChild(shareBtn);
+}
+
+function startViewerSync() {
+    // 1초마다 localStorage에서 상태 읽어서 UI 업데이트
+    setInterval(() => {
+        loadGameState();
+        loadFearlessFromStorage();
+    }, 1000);
 }
 
 // ==================== 챔피언 검증 ====================
@@ -449,18 +577,36 @@ function validateChampionList() {
 // ==================== 초기화 ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Data Dragon 데이터 먼저 로드
+    // 1. 방장/관전자 모드 초기화
+    initSession();
+
+    // 2. Data Dragon 데이터 먼저 로드
     await loadDataDragon();
 
-    // 2. 챔피언 데이터 검증
+    // 3. 챔피언 데이터 검증
     validateChampionList();
 
-    // 3. 나머지 초기화
+    // 4. 나머지 초기화
     initTabs();
     initTeamAssignment();
     initFearless();
-    loadExampleData();
+
+    // 5. 방장 모드일 때만 예제 데이터 로드
+    if (sessionMode === 'host') {
+        loadExampleData();
+    }
+
+    // 6. 저장된 상태 로드
     loadFearlessFromStorage();
+    loadTeamAssignmentFromStorage();
+
+    // 7. 관전자 모드 UI 업데이트
+    applyViewerMode();
+
+    // 8. 관전자 모드일 때 자동 새로고침 시작
+    if (sessionMode === 'viewer') {
+        startViewerSync();
+    }
 });
 
 // ==================== 탭 전환 ====================
@@ -485,6 +631,19 @@ function initTabs() {
 // ==================== 팀 배정 기능 ====================
 
 function initTeamAssignment() {
+    // 팀 이름 입력 이벤트
+    document.getElementById('team-a-name').addEventListener('input', (e) => {
+        gameState.teamNames.a = e.target.value.trim() || 'TEAM A';
+        saveGameState();
+        updateAllTeamNames();
+    });
+
+    document.getElementById('team-b-name').addEventListener('input', (e) => {
+        gameState.teamNames.b = e.target.value.trim() || 'TEAM B';
+        saveGameState();
+        updateAllTeamNames();
+    });
+
     document.getElementById('random-assign-btn').addEventListener('click', () => {
         const players = getPlayersFromInputs();
         if (!validatePlayers(players)) {
@@ -504,6 +663,17 @@ function initTeamAssignment() {
         const teams = balancedAssign(players);
         displayTeamResult(teams);
     });
+}
+
+function updateAllTeamNames() {
+    // 팀 배정 결과 업데이트
+    const teamAHeader = document.querySelector('.team-a-header');
+    const teamBHeader = document.querySelector('.team-b-header');
+    if (teamAHeader) teamAHeader.textContent = gameState.teamNames.a;
+    if (teamBHeader) teamBHeader.textContent = gameState.teamNames.b;
+
+    // 밴픽 화면 업데이트
+    updateFearlessUI();
 }
 
 function loadExampleData() {
@@ -566,21 +736,21 @@ function validatePlayers(players) {
 }
 
 function randomAssign(players) {
-    const blueTeam = [];
-    const redTeam = [];
+    const teamA = [];
+    const teamB = [];
 
     POSITIONS.forEach(position => {
         const [p1, p2] = players[position];
         if (Math.random() < 0.5) {
-            blueTeam.push(p1);
-            redTeam.push(p2);
+            teamA.push(p1);
+            teamB.push(p2);
         } else {
-            blueTeam.push(p2);
-            redTeam.push(p1);
+            teamA.push(p2);
+            teamB.push(p1);
         }
     });
 
-    return { blueTeam, redTeam };
+    return { teamA, teamB };
 }
 
 function balancedAssign(players) {
@@ -588,53 +758,61 @@ function balancedAssign(players) {
     let bestScore = Infinity;
 
     for (let mask = 0; mask < 32; mask++) {
-        const blueTeam = [];
-        const redTeam = [];
+        const teamA = [];
+        const teamB = [];
 
         POSITIONS.forEach((position, idx) => {
             const [p1, p2] = players[position];
             if ((mask >> idx) & 1) {
-                blueTeam.push(p1);
-                redTeam.push(p2);
+                teamA.push(p1);
+                teamB.push(p2);
             } else {
-                blueTeam.push(p2);
-                redTeam.push(p1);
+                teamA.push(p2);
+                teamB.push(p1);
             }
         });
 
-        const score = calculateBalanceScore(blueTeam, redTeam);
+        const score = calculateBalanceScore(teamA, teamB);
 
         if (score < bestScore) {
             bestScore = score;
-            bestAssignment = { blueTeam, redTeam };
+            bestAssignment = { teamA, teamB };
         }
     }
 
     return bestAssignment;
 }
 
-function calculateBalanceScore(blueTeam, redTeam) {
-    const blueTotal = blueTeam.reduce((sum, p) => sum + p.tier, 0);
-    const redTotal = redTeam.reduce((sum, p) => sum + p.tier, 0);
-    const totalDiff = Math.abs(blueTotal - redTotal);
+function calculateBalanceScore(teamA, teamB) {
+    const totalA = teamA.reduce((sum, p) => sum + p.tier, 0);
+    const totalB = teamB.reduce((sum, p) => sum + p.tier, 0);
+    const totalDiff = Math.abs(totalA - totalB);
 
     let positionDiff = 0;
     POSITIONS.forEach((position, idx) => {
-        const blueTier = blueTeam[idx].tier;
-        const redTier = redTeam[idx].tier;
-        positionDiff += Math.abs(blueTier - redTier);
+        const tierA = teamA[idx].tier;
+        const tierB = teamB[idx].tier;
+        positionDiff += Math.abs(tierA - tierB);
     });
 
     return totalDiff * 10 + positionDiff;
 }
 
 function displayTeamResult(teams) {
-    const { blueTeam, redTeam } = teams;
+    const { teamA, teamB } = teams;
 
-    const blueRoster = document.getElementById('blue-roster');
-    blueRoster.innerHTML = '';
-    blueTeam.forEach(player => {
-        blueRoster.innerHTML += `
+    // 전역 상태 저장
+    gameState.teams.a = teamA;
+    gameState.teams.b = teamB;
+    gameState.assigned = true;
+
+    // localStorage에 저장
+    saveGameState();
+
+    const teamARoster = document.getElementById('team-a-roster');
+    teamARoster.innerHTML = '';
+    teamA.forEach(player => {
+        teamARoster.innerHTML += `
             <div class="roster-item">
                 <span class="position">${player.position}</span>
                 <span class="name">${player.name}</span>
@@ -643,10 +821,10 @@ function displayTeamResult(teams) {
         `;
     });
 
-    const redRoster = document.getElementById('red-roster');
-    redRoster.innerHTML = '';
-    redTeam.forEach(player => {
-        redRoster.innerHTML += `
+    const teamBRoster = document.getElementById('team-b-roster');
+    teamBRoster.innerHTML = '';
+    teamB.forEach(player => {
+        teamBRoster.innerHTML += `
             <div class="roster-item">
                 <span class="position">${player.position}</span>
                 <span class="name">${player.name}</span>
@@ -655,11 +833,15 @@ function displayTeamResult(teams) {
         `;
     });
 
-    const blueScore = blueTeam.reduce((sum, p) => sum + p.tier, 0);
-    const redScore = redTeam.reduce((sum, p) => sum + p.tier, 0);
+    const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
+    const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
 
-    document.getElementById('blue-score').textContent = blueScore.toFixed(2);
-    document.getElementById('red-score').textContent = redScore.toFixed(2);
+    document.getElementById('team-a-score').textContent = scoreA.toFixed(2);
+    document.getElementById('team-b-score').textContent = scoreB.toFixed(2);
+
+    // 팀 이름 표시
+    document.querySelector('.team-a-header').textContent = gameState.teamNames.a;
+    document.querySelector('.team-b-header').textContent = gameState.teamNames.b;
 
     document.getElementById('team-result').style.display = 'block';
 }
@@ -724,7 +906,15 @@ function resetFearless() {
         currentBans: [],
         currentPicks: [],
         selectedChampion: null,
-        currentRole: 'ALL'
+        currentRole: 'ALL',
+        bans: {
+            a: [],
+            b: []
+        },
+        picks: {
+            a: [],
+            b: []
+        }
     };
 
     saveFearlessToStorage();
@@ -765,8 +955,10 @@ function renderChampionList(searchText = '') {
 
         const isBanned = fearlessState.bannedChampions.has(champion.nameKR);
         const isInCurrentGame =
-            fearlessState.currentBans.includes(champion.nameKR) ||
-            fearlessState.currentPicks.includes(champion.nameKR);
+            fearlessState.bans.a.includes(champion.nameKR) ||
+            fearlessState.bans.b.includes(champion.nameKR) ||
+            fearlessState.picks.a.includes(champion.nameKR) ||
+            fearlessState.picks.b.includes(champion.nameKR);
 
         if (isBanned || isInCurrentGame) {
             div.classList.add('disabled');
@@ -821,31 +1013,51 @@ function showChampionActions(championName) {
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'button-group champion-actions';
     actionsDiv.style.marginTop = '10px';
+    actionsDiv.style.display = 'grid';
+    actionsDiv.style.gridTemplateColumns = '1fr 1fr';
+    actionsDiv.style.gap = '10px';
 
-    const banBtn = document.createElement('button');
-    banBtn.className = 'btn btn-danger';
-    banBtn.textContent = 'BAN에 추가';
-    banBtn.onclick = () => addToBan(championName);
+    // 팀 A 밴/픽
+    const teamABanBtn = document.createElement('button');
+    teamABanBtn.className = 'btn btn-danger';
+    teamABanBtn.textContent = `${gameState.teamNames.a} BAN`;
+    teamABanBtn.onclick = () => addToBan(championName, 'a');
 
-    const pickBtn = document.createElement('button');
-    pickBtn.className = 'btn btn-primary';
-    pickBtn.textContent = 'PICK에 추가';
-    pickBtn.onclick = () => addToPick(championName);
+    const teamAPickBtn = document.createElement('button');
+    teamAPickBtn.className = 'btn btn-primary';
+    teamAPickBtn.textContent = `${gameState.teamNames.a} PICK`;
+    teamAPickBtn.onclick = () => addToPick(championName, 'a');
 
-    actionsDiv.appendChild(banBtn);
-    actionsDiv.appendChild(pickBtn);
+    // 팀 B 밴/픽
+    const teamBBanBtn = document.createElement('button');
+    teamBBanBtn.className = 'btn btn-danger';
+    teamBBanBtn.textContent = `${gameState.teamNames.b} BAN`;
+    teamBBanBtn.onclick = () => addToBan(championName, 'b');
+
+    const teamBPickBtn = document.createElement('button');
+    teamBPickBtn.className = 'btn btn-primary';
+    teamBPickBtn.textContent = `${gameState.teamNames.b} PICK`;
+    teamBPickBtn.onclick = () => addToPick(championName, 'b');
+
+    actionsDiv.appendChild(teamABanBtn);
+    actionsDiv.appendChild(teamBBanBtn);
+    actionsDiv.appendChild(teamAPickBtn);
+    actionsDiv.appendChild(teamBPickBtn);
 
     document.querySelector('.champion-selector').appendChild(actionsDiv);
 }
 
-function addToBan(championName) {
-    if (fearlessState.currentBans.length >= 10) {
-        alert('밴은 최대 10개까지 가능합니다.');
+function addToBan(championName, team) {
+    const banArray = fearlessState.bans[team];
+    const teamName = gameState.teamNames[team];
+
+    if (banArray.length >= 5) {
+        alert(`${teamName} 밴은 최대 5개까지 가능합니다.`);
         return;
     }
 
-    if (!fearlessState.currentBans.includes(championName)) {
-        fearlessState.currentBans.push(championName);
+    if (!banArray.includes(championName)) {
+        banArray.push(championName);
         fearlessState.selectedChampion = null;
 
         // 액션 버튼 제거
@@ -858,14 +1070,17 @@ function addToBan(championName) {
     }
 }
 
-function addToPick(championName) {
-    if (fearlessState.currentPicks.length >= 10) {
-        alert('픽은 최대 10개까지 가능합니다.');
+function addToPick(championName, team) {
+    const pickArray = fearlessState.picks[team];
+    const teamName = gameState.teamNames[team];
+
+    if (pickArray.length >= 5) {
+        alert(`${teamName} 픽은 최대 5개까지 가능합니다.`);
         return;
     }
 
-    if (!fearlessState.currentPicks.includes(championName)) {
-        fearlessState.currentPicks.push(championName);
+    if (!pickArray.includes(championName)) {
+        pickArray.push(championName);
         fearlessState.selectedChampion = null;
 
         // 액션 버튼 제거
@@ -878,15 +1093,15 @@ function addToPick(championName) {
     }
 }
 
-function removeFromBan(championName) {
-    fearlessState.currentBans = fearlessState.currentBans.filter(c => c !== championName);
+function removeFromBan(championName, team) {
+    fearlessState.bans[team] = fearlessState.bans[team].filter(c => c !== championName);
     renderChampionList(document.getElementById('champion-search').value);
     updateFearlessUI();
     saveFearlessToStorage();
 }
 
-function removeFromPick(championName) {
-    fearlessState.currentPicks = fearlessState.currentPicks.filter(c => c !== championName);
+function removeFromPick(championName, team) {
+    fearlessState.picks[team] = fearlessState.picks[team].filter(c => c !== championName);
     renderChampionList(document.getElementById('champion-search').value);
     updateFearlessUI();
     saveFearlessToStorage();
@@ -896,34 +1111,73 @@ function updateFearlessUI() {
     document.getElementById('current-game').textContent = `Game ${fearlessState.currentGame}`;
     document.getElementById('banned-count').textContent = fearlessState.bannedChampions.size;
 
-    // 밴/픽 개수 표시 업데이트
-    document.getElementById('ban-count').textContent = `${fearlessState.currentBans.length}/10`;
-    document.getElementById('pick-count').textContent = `${fearlessState.currentPicks.length}/10`;
+    // 팀 이름 업데이트
+    const teamABanHeader = document.querySelector('.team-a-ban-header');
+    const teamBBanHeader = document.querySelector('.team-b-ban-header');
+    const teamAPickHeader = document.querySelector('.team-a-pick-header');
+    const teamBPickHeader = document.querySelector('.team-b-pick-header');
 
-    // 현재 BAN 목록
-    const currentBansDiv = document.getElementById('current-bans');
-    currentBansDiv.innerHTML = '';
-    fearlessState.currentBans.forEach(championName => {
+    if (teamABanHeader) teamABanHeader.textContent = gameState.teamNames.a;
+    if (teamBBanHeader) teamBBanHeader.textContent = gameState.teamNames.b;
+    if (teamAPickHeader) teamAPickHeader.textContent = gameState.teamNames.a;
+    if (teamBPickHeader) teamBPickHeader.textContent = gameState.teamNames.b;
+
+    // 밴/픽 개수 표시 업데이트
+    document.getElementById('team-a-ban-count').textContent = `${fearlessState.bans.a.length}/5`;
+    document.getElementById('team-b-ban-count').textContent = `${fearlessState.bans.b.length}/5`;
+    document.getElementById('team-a-pick-count').textContent = `${fearlessState.picks.a.length}/5`;
+    document.getElementById('team-b-pick-count').textContent = `${fearlessState.picks.b.length}/5`;
+
+    // 팀 A BAN 목록
+    const teamABansDiv = document.getElementById('team-a-bans');
+    teamABansDiv.innerHTML = '';
+    fearlessState.bans.a.forEach(championName => {
         const tag = document.createElement('div');
         tag.className = 'champion-tag ban';
         tag.innerHTML = `
             ${championName}
-            <button class="remove-btn" onclick="removeFromBan('${championName}')">×</button>
+            <button class="remove-btn" onclick="removeFromBan('${championName}', 'a')">×</button>
         `;
-        currentBansDiv.appendChild(tag);
+        teamABansDiv.appendChild(tag);
     });
 
-    // 현재 PICK 목록
-    const currentPicksDiv = document.getElementById('current-picks');
-    currentPicksDiv.innerHTML = '';
-    fearlessState.currentPicks.forEach(championName => {
+    // 팀 B BAN 목록
+    const teamBBansDiv = document.getElementById('team-b-bans');
+    teamBBansDiv.innerHTML = '';
+    fearlessState.bans.b.forEach(championName => {
+        const tag = document.createElement('div');
+        tag.className = 'champion-tag ban';
+        tag.innerHTML = `
+            ${championName}
+            <button class="remove-btn" onclick="removeFromBan('${championName}', 'b')">×</button>
+        `;
+        teamBBansDiv.appendChild(tag);
+    });
+
+    // 팀 A PICK 목록
+    const teamAPicksDiv = document.getElementById('team-a-picks');
+    teamAPicksDiv.innerHTML = '';
+    fearlessState.picks.a.forEach(championName => {
         const tag = document.createElement('div');
         tag.className = 'champion-tag pick';
         tag.innerHTML = `
             ${championName}
-            <button class="remove-btn" onclick="removeFromPick('${championName}')">×</button>
+            <button class="remove-btn" onclick="removeFromPick('${championName}', 'a')">×</button>
         `;
-        currentPicksDiv.appendChild(tag);
+        teamAPicksDiv.appendChild(tag);
+    });
+
+    // 팀 B PICK 목록
+    const teamBPicksDiv = document.getElementById('team-b-picks');
+    teamBPicksDiv.innerHTML = '';
+    fearlessState.picks.b.forEach(championName => {
+        const tag = document.createElement('div');
+        tag.className = 'champion-tag pick';
+        tag.innerHTML = `
+            ${championName}
+            <button class="remove-btn" onclick="removeFromPick('${championName}', 'b')">×</button>
+        `;
+        teamBPicksDiv.appendChild(tag);
     });
 
     // 게임 히스토리 표시 (경고 없이)
@@ -931,28 +1185,43 @@ function updateFearlessUI() {
 }
 
 function confirmGame() {
-    if (fearlessState.currentBans.length === 0 && fearlessState.currentPicks.length === 0) {
+    const totalBans = fearlessState.bans.a.length + fearlessState.bans.b.length;
+    const totalPicks = fearlessState.picks.a.length + fearlessState.picks.b.length;
+
+    if (totalBans === 0 && totalPicks === 0) {
         alert('최소 1개 이상의 챔피언을 BAN 또는 PICK해주세요!');
         return;
     }
 
     const gameRecord = {
         gameNum: fearlessState.currentGame,
-        bans: [...fearlessState.currentBans],
-        picks: [...fearlessState.currentPicks]
+        teamNames: { ...gameState.teamNames },
+        bans: {
+            a: [...fearlessState.bans.a],
+            b: [...fearlessState.bans.b]
+        },
+        picks: {
+            a: [...fearlessState.picks.a],
+            b: [...fearlessState.picks.b]
+        }
     };
 
     fearlessState.games.push(gameRecord);
 
-    fearlessState.currentBans.forEach(champ => fearlessState.bannedChampions.add(champ));
-    fearlessState.currentPicks.forEach(champ => fearlessState.bannedChampions.add(champ));
+    // 모든 밴/픽을 금지 목록에 추가
+    fearlessState.bans.a.forEach(champ => fearlessState.bannedChampions.add(champ));
+    fearlessState.bans.b.forEach(champ => fearlessState.bannedChampions.add(champ));
+    fearlessState.picks.a.forEach(champ => fearlessState.bannedChampions.add(champ));
+    fearlessState.picks.b.forEach(champ => fearlessState.bannedChampions.add(champ));
 
     if (fearlessState.currentGame >= fearlessState.seriesType) {
         alert(`Bo${fearlessState.seriesType} 시리즈가 완료되었습니다!`);
     } else {
         fearlessState.currentGame++;
-        fearlessState.currentBans = [];
-        fearlessState.currentPicks = [];
+        fearlessState.bans.a = [];
+        fearlessState.bans.b = [];
+        fearlessState.picks.a = [];
+        fearlessState.picks.b = [];
         fearlessState.selectedChampion = null;
     }
 
@@ -974,13 +1243,25 @@ function displayGameHistory() {
         return;
     }
 
-    const historyHtml = fearlessState.games.map(game => `
-        <div class="history-item">
-            <h4>Game ${game.gameNum}</h4>
-            <p><strong>BAN:</strong> ${game.bans.join(', ') || '없음'}</p>
-            <p><strong>PICK:</strong> ${game.picks.join(', ') || '없음'}</p>
-        </div>
-    `).join('');
+    const historyHtml = fearlessState.games.map(game => {
+        const teamNameA = game.teamNames?.a || 'TEAM A';
+        const teamNameB = game.teamNames?.b || 'TEAM B';
+        return `
+            <div class="history-item">
+                <h4>Game ${game.gameNum}</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <p><strong>${teamNameA} BAN:</strong> ${game.bans?.a?.join(', ') || game.blueBans?.join(', ') || '없음'}</p>
+                        <p><strong>${teamNameA} PICK:</strong> ${game.picks?.a?.join(', ') || game.bluePicks?.join(', ') || '없음'}</p>
+                    </div>
+                    <div>
+                        <p><strong>${teamNameB} BAN:</strong> ${game.bans?.b?.join(', ') || game.redBans?.join(', ') || '없음'}</p>
+                        <p><strong>${teamNameB} PICK:</strong> ${game.picks?.b?.join(', ') || game.redPicks?.join(', ') || '없음'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 
     historyDiv.innerHTML = historyHtml;
 }
@@ -1006,7 +1287,9 @@ function loadFearlessFromStorage() {
         fearlessState = {
             ...data,
             bannedChampions: new Set(data.bannedChampions),
-            currentRole: data.currentRole || 'ALL'
+            currentRole: data.currentRole || 'ALL',
+            bans: data.bans || { a: data.blueBans || [], b: data.redBans || [] },
+            picks: data.picks || { a: data.bluePicks || [], b: data.redPicks || [] }
         };
 
         document.getElementById('series-type').value = fearlessState.seriesType;
@@ -1021,6 +1304,100 @@ function loadFearlessFromStorage() {
         renderChampionList();
         updateFearlessUI();
     }
+}
+
+function saveGameState() {
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+}
+
+function loadGameState() {
+    const saved = localStorage.getItem('gameState');
+    if (saved) {
+        const data = JSON.parse(saved);
+
+        // 하위 호환성: 기존 blueTeam/redTeam 데이터를 teamA/teamB로 변환
+        gameState = {
+            teamNames: data.teamNames || { a: 'TEAM A', b: 'TEAM B' },
+            teams: {
+                a: data.teams?.a || data.blueTeam || [],
+                b: data.teams?.b || data.redTeam || []
+            },
+            assigned: data.assigned || false
+        };
+
+        // 팀 이름 입력창 업데이트
+        document.getElementById('team-a-name').value = gameState.teamNames.a;
+        document.getElementById('team-b-name').value = gameState.teamNames.b;
+
+        if (gameState.assigned && gameState.teams.a.length > 0 && gameState.teams.b.length > 0) {
+            // UI 업데이트
+            displayGameStateFromStorage();
+        }
+    }
+}
+
+// 하위 호환성을 위한 별칭
+function saveTeamAssignmentToStorage() {
+    saveGameState();
+}
+
+function loadTeamAssignmentFromStorage() {
+    loadGameState();
+}
+
+function displayGameStateFromStorage() {
+    const teamA = gameState.teams.a;
+    const teamB = gameState.teams.b;
+
+    const teamARoster = document.getElementById('team-a-roster');
+    if (teamARoster) {
+        teamARoster.innerHTML = '';
+        teamA.forEach(player => {
+            teamARoster.innerHTML += `
+                <div class="roster-item">
+                    <span class="position">${player.position}</span>
+                    <span class="name">${player.name}</span>
+                    <span class="tier">${scoreToTierDisplay(player.tier)}</span>
+                </div>
+            `;
+        });
+    }
+
+    const teamBRoster = document.getElementById('team-b-roster');
+    if (teamBRoster) {
+        teamBRoster.innerHTML = '';
+        teamB.forEach(player => {
+            teamBRoster.innerHTML += `
+                <div class="roster-item">
+                    <span class="position">${player.position}</span>
+                    <span class="name">${player.name}</span>
+                    <span class="tier">${scoreToTierDisplay(player.tier)}</span>
+                </div>
+            `;
+        });
+    }
+
+    const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
+    const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
+
+    const scoreAElem = document.getElementById('team-a-score');
+    const scoreBElem = document.getElementById('team-b-score');
+    if (scoreAElem) scoreAElem.textContent = scoreA.toFixed(2);
+    if (scoreBElem) scoreBElem.textContent = scoreB.toFixed(2);
+
+    // 팀 이름 표시
+    const teamAHeader = document.querySelector('.team-a-header');
+    const teamBHeader = document.querySelector('.team-b-header');
+    if (teamAHeader) teamAHeader.textContent = gameState.teamNames.a;
+    if (teamBHeader) teamBHeader.textContent = gameState.teamNames.b;
+
+    const resultDiv = document.getElementById('team-result');
+    if (resultDiv) resultDiv.style.display = 'block';
+}
+
+// 하위 호환성
+function displayTeamResultFromStorage(data) {
+    displayGameStateFromStorage();
 }
 
 // 전역 함수로 노출

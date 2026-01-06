@@ -19,6 +19,20 @@
         <!-- 팀 배정 섹션 -->
         <div id="team-assignment" class="tab-content active">
             <div class="section">
+                <h2>팀 이름 설정</h2>
+                <div class="team-name-inputs">
+                    <div class="team-name-group">
+                        <label for="team-a-name">팀 A 이름:</label>
+                        <input type="text" id="team-a-name" placeholder="TEAM A" maxlength="20" value="TEAM A">
+                    </div>
+                    <div class="team-name-group">
+                        <label for="team-b-name">팀 B 이름:</label>
+                        <input type="text" id="team-b-name" placeholder="TEAM B" maxlength="20" value="TEAM B">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
                 <h2>플레이어 입력</h2>
 
                 <!-- TOP -->
@@ -426,13 +440,16 @@
             <div id="team-result" class="section" style="display: none;">
                 <h2>팀 배정 결과</h2>
                 <div class="teams-container">
-                    <div class="team blue-team">
-                        <h3>🔵 블루팀 (티어 합: <span id="blue-score">0</span>)</h3>
-                        <div id="blue-roster"></div>
+                    <div class="team team-a">
+                        <h3 class="team-a-header">TEAM A</h3>
+                        <div class="team-score">티어 합: <span id="team-a-score">0</span></div>
+                        <div id="team-a-roster"></div>
                     </div>
-                    <div class="team red-team">
-                        <h3>🔴 레드팀 (티어 합: <span id="red-score">0</span>)</h3>
-                        <div id="red-roster"></div>
+                    <div class="vs-divider">VS</div>
+                    <div class="team team-b">
+                        <h3 class="team-b-header">TEAM B</h3>
+                        <div class="team-score">티어 합: <span id="team-b-score">0</span></div>
+                        <div id="team-b-roster"></div>
                     </div>
                 </div>
             </div>
@@ -478,13 +495,18 @@
                 </div>
 
                 <div class="current-picks">
-                    <div class="picks-section">
-                        <h3>현재 게임 BAN <span id="ban-count" class="count-badge">0/10</span></h3>
-                        <div id="current-bans" class="champion-tags"></div>
+                    <div class="picks-section team-a-side">
+                        <h3><span class="team-a-ban-header">TEAM A</span> BAN <span id="team-a-ban-count" class="count-badge">0/5</span></h3>
+                        <div id="team-a-bans" class="champion-tags"></div>
+                        <h3><span class="team-a-pick-header">TEAM A</span> PICK <span id="team-a-pick-count" class="count-badge">0/5</span></h3>
+                        <div id="team-a-picks" class="champion-tags"></div>
                     </div>
-                    <div class="picks-section">
-                        <h3>현재 게임 PICK <span id="pick-count" class="count-badge">0/10</span></h3>
-                        <div id="current-picks" class="champion-tags"></div>
+                    <div class="vs-divider-small">VS</div>
+                    <div class="picks-section team-b-side">
+                        <h3><span class="team-b-ban-header">TEAM B</span> BAN <span id="team-b-ban-count" class="count-badge">0/5</span></h3>
+                        <div id="team-b-bans" class="champion-tags"></div>
+                        <h3><span class="team-b-pick-header">TEAM B</span> PICK <span id="team-b-pick-count" class="count-badge">0/5</span></h3>
+                        <div id="team-b-picks" class="champion-tags"></div>
                     </div>
                 </div>
 
