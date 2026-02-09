@@ -305,11 +305,11 @@ header h1 {
 }
 
 .blue-team, .team-a {
-    border-left: 5px solid #4a90e2;
+    border-left: 5px solid #3B82F6;
 }
 
 .red-team, .team-b {
-    border-left: 5px solid #e74c3c;
+    border-left: 5px solid #8B5CF6;
 }
 
 .team h3 {
@@ -613,25 +613,75 @@ header h1 {
 }
 
 .picks-section.blue-side, .picks-section.team-a-side {
-    border-left: 5px solid #4a90e2;
+    border-left: 5px solid #3B82F6;
 }
 
 .picks-section.red-side, .picks-section.team-b-side {
-    border-left: 5px solid #e74c3c;
+    border-left: 5px solid #8B5CF6;
 }
 
-.picks-section h3 {
+/* ==================== Ban/Pick Header (Badge UI) ==================== */
+
+.banpick-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.team-badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 700;
     font-size: 1rem;
-    margin-bottom: 8px;
-}
-
-.picks-section h3 span {
+    color: #1e3c72;
+    background: #eef1f8;
+    padding: 6px 14px;
+    border-radius: 6px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 140px;
+    line-height: 1.4;
+}
+
+.team-a-side .team-badge {
+    border-left: 3px solid #3B82F6;
+    color: white;
+    background: #3B82F6;
+}
+
+.team-b-side .team-badge {
+    border-left: 3px solid #8B5CF6;
+    color: white;
+    background: #8B5CF6;
+}
+
+.ban-badge,
+.pick-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
     white-space: nowrap;
-    max-width: 120px;
-    display: inline-block;
-    vertical-align: middle;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+}
+
+.ban-badge {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1.5px solid #FECACA;
+}
+
+.pick-badge {
+    background: #D1FAE5;
+    color: #059669;
+    border: 1.5px solid #A7F3D0;
 }
 
 /* ==================== Champion Tags ==================== */
@@ -728,7 +778,7 @@ header h1 {
     gap: 8px !important;
 }
 
-/* ==================== Count Badge ==================== */
+/* ==================== Count Badge (legacy fallback) ==================== */
 
 .count-badge {
     display: inline-block;
@@ -739,6 +789,11 @@ header h1 {
     font-size: 0.8rem;
     font-weight: 600;
     margin-left: 6px;
+}
+
+/* Ban/Pick header spacing between sections */
+.picks-section .champion-tags + .banpick-header {
+    margin-top: 16px;
 }
 
 /* ==================== Scrollbar ==================== */
@@ -956,8 +1011,15 @@ header h1 {
         gap: 20px;
     }
 
-    .picks-section h3 span {
-        max-width: 150px;
+    .team-badge {
+        max-width: 160px;
+        font-size: 1.05rem;
+    }
+
+    .ban-badge,
+    .pick-badge {
+        font-size: 0.9rem;
+        padding: 7px 14px;
     }
 
     /* History grid: 2 columns on tablet */
@@ -1098,6 +1160,18 @@ header h1 {
 
     .picks-section {
         padding: 20px;
+    }
+
+    .team-badge {
+        max-width: 180px;
+        font-size: 1.1rem;
+        padding: 7px 16px;
+    }
+
+    .ban-badge,
+    .pick-badge {
+        font-size: 0.9rem;
+        padding: 7px 16px;
     }
 
     .champion-actions .btn {

@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-14EL7NXW9X"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-14EL7NXW9X');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoL 5대5 내전 도우미</title>
@@ -496,16 +505,28 @@
 
                 <div class="current-picks">
                     <div class="picks-section team-a-side">
-                        <h3><span class="team-a-ban-header">TEAM A</span> BAN <span id="team-a-ban-count" class="count-badge">0/5</span></h3>
+                        <div class="banpick-header ban-header">
+                            <span class="team-badge team-a-ban-header">TEAM A</span>
+                            <span class="ban-badge">BAN <span id="team-a-ban-count">0/5</span></span>
+                        </div>
                         <div id="team-a-bans" class="champion-tags"></div>
-                        <h3><span class="team-a-pick-header">TEAM A</span> PICK <span id="team-a-pick-count" class="count-badge">0/5</span></h3>
+                        <div class="banpick-header pick-header">
+                            <span class="team-badge team-a-pick-header">TEAM A</span>
+                            <span class="pick-badge">PICK <span id="team-a-pick-count">0/5</span></span>
+                        </div>
                         <div id="team-a-picks" class="champion-tags"></div>
                     </div>
                     <div class="vs-divider-small">VS</div>
                     <div class="picks-section team-b-side">
-                        <h3><span class="team-b-ban-header">TEAM B</span> BAN <span id="team-b-ban-count" class="count-badge">0/5</span></h3>
+                        <div class="banpick-header ban-header">
+                            <span class="team-badge team-b-ban-header">TEAM B</span>
+                            <span class="ban-badge">BAN <span id="team-b-ban-count">0/5</span></span>
+                        </div>
                         <div id="team-b-bans" class="champion-tags"></div>
-                        <h3><span class="team-b-pick-header">TEAM B</span> PICK <span id="team-b-pick-count" class="count-badge">0/5</span></h3>
+                        <div class="banpick-header pick-header">
+                            <span class="team-badge team-b-pick-header">TEAM B</span>
+                            <span class="pick-badge">PICK <span id="team-b-pick-count">0/5</span></span>
+                        </div>
                         <div id="team-b-picks" class="champion-tags"></div>
                     </div>
                 </div>
