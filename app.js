@@ -1350,6 +1350,8 @@ function renderChampionList(searchText = '') {
         div.addEventListener('click', () => {
             if (!isBanned && !isInCurrentGame) {
                 selectChampion(champion.nameKR, div);
+            } else if (isBanned) {
+                alert(`${champion.nameKR}은(는) 이전 게임에서 이미 픽되어 사용할 수 없습니다.`);
             }
         });
 
@@ -1472,6 +1474,7 @@ function removeFromPick(championName, team) {
 function updateFearlessUI() {
     document.getElementById('current-game').textContent = `Game ${fearlessState.currentGame}`;
     document.getElementById('banned-count').textContent = fearlessState.bannedChampions.size;
+    document.getElementById('banned-label').textContent = '이전 게임 픽으로 사용 금지된 챔피언';
 
     // 팀 이름 업데이트
     const teamABanHeader = document.querySelector('.team-a-ban-header');
@@ -1570,9 +1573,7 @@ function confirmGame() {
 
     fearlessState.games.push(gameRecord);
 
-    // 모든 밴/픽을 금지 목록에 추가
-    fearlessState.bans.a.forEach(champ => fearlessState.bannedChampions.add(champ));
-    fearlessState.bans.b.forEach(champ => fearlessState.bannedChampions.add(champ));
+    // 피어리스: 픽된 챔피언만 이후 게임에서 사용 금지 (밴은 누적되지 않음)
     fearlessState.picks.a.forEach(champ => fearlessState.bannedChampions.add(champ));
     fearlessState.picks.b.forEach(champ => fearlessState.bannedChampions.add(champ));
 
