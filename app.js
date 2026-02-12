@@ -630,7 +630,83 @@ function initTabs() {
 
 // ==================== 팀 배정 기능 ====================
 
+function generatePlayerCards() {
+    const container = document.getElementById('player-cards-container');
+    if (!container) return;
+
+    const tierOptions = `
+        <option value="0.25">Iron IV</option>
+        <option value="0.50">Iron III</option>
+        <option value="0.75">Iron II</option>
+        <option value="1.00">Iron I</option>
+        <option value="1.25">Bronze IV</option>
+        <option value="1.50">Bronze III</option>
+        <option value="1.75">Bronze II</option>
+        <option value="2.00">Bronze I</option>
+        <option value="2.25">Silver IV</option>
+        <option value="2.50">Silver III</option>
+        <option value="2.75">Silver II</option>
+        <option value="3.00">Silver I</option>
+        <option value="3.25">Gold IV</option>
+        <option value="3.50">Gold III</option>
+        <option value="3.75">Gold II</option>
+        <option value="4.00" selected>Gold I</option>
+        <option value="4.25">Platinum IV</option>
+        <option value="4.50">Platinum III</option>
+        <option value="4.75">Platinum II</option>
+        <option value="5.00">Platinum I</option>
+        <option value="5.25">Emerald IV</option>
+        <option value="5.50">Emerald III</option>
+        <option value="5.75">Emerald II</option>
+        <option value="6.00">Emerald I</option>
+        <option value="6.25">Diamond IV</option>
+        <option value="6.50">Diamond III</option>
+        <option value="6.75">Diamond II</option>
+        <option value="7.00">Diamond I</option>
+        <option value="7.00">Master</option>
+        <option value="8.00">Grandmaster</option>
+        <option value="9.00">Challenger</option>
+    `;
+
+    const posLabels = { TOP: 'TOP', JUNGLE: 'JG', MID: 'MID', ADC: 'ADC', SUPPORT: 'SUP' };
+
+    let html = '';
+    for (let i = 0; i < 10; i++) {
+        const posChecks = POSITIONS.map(pos => `
+            <label class="position-check-label" data-player="${i}" data-pos="${pos}">
+                <input type="checkbox" class="position-check" data-player="${i}" data-pos="${pos}">
+                ${posLabels[pos]}
+            </label>
+        `).join('');
+
+        html += `
+            <div class="player-card" data-player="${i}">
+                <div class="player-card-header">Player ${i + 1}</div>
+                <div class="player-card-row">
+                    <input type="text" class="player-name" data-player="${i}" placeholder="닉네임">
+                    <select class="player-tier" data-player="${i}">${tierOptions}</select>
+                </div>
+                <div class="position-checkboxes">${posChecks}</div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+
+    // 체크박스 토글 이벤트
+    container.querySelectorAll('.position-check-label').forEach(label => {
+        label.addEventListener('click', (e) => {
+            e.preventDefault();
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            label.classList.toggle('checked', checkbox.checked);
+        });
+    });
+}
+
 function initTeamAssignment() {
+    // 플레이어 카드 생성
+    generatePlayerCards();
+
     // 팀 이름 입력 이벤트
     document.getElementById('team-a-name').addEventListener('input', (e) => {
         gameState.teamNames.a = e.target.value.trim() || 'TEAM A';
@@ -645,24 +721,28 @@ function initTeamAssignment() {
     });
 
     document.getElementById('random-assign-btn').addEventListener('click', () => {
-        const players = getPlayersFromInputs();
-        if (!validatePlayers(players)) {
-            alert('모든 플레이어의 닉네임을 입력해주세요!');
-            return;
-        }
-        const teams = randomAssign(players);
-        displayTeamResult(teams);
+        const validation = getAndValidatePlayers();
+        if (!validation) return;
+        const result = randomAssign(validation);
+        if (result) displayTeamResult(result);
     });
 
     document.getElementById('balanced-assign-btn').addEventListener('click', () => {
-        const players = getPlayersFromInputs();
-        if (!validatePlayers(players)) {
-            alert('모든 플레이어의 닉네임을 입력해주세요!');
-            return;
-        }
-        const teams = balancedAssign(players);
-        displayTeamResult(teams);
+        const validation = getAndValidatePlayers();
+        if (!validation) return;
+        const result = balancedAssign(validation);
+        if (result) displayTeamResult(result);
     });
+}
+
+function getAndValidatePlayers() {
+    const players = getPlayersFromInputs();
+    const error = validatePlayers(players);
+    if (error) {
+        alert(error);
+        return null;
+    }
+    return players;
 }
 
 function updateAllTeamNames() {
@@ -678,101 +758,184 @@ function updateAllTeamNames() {
 
 function loadExampleData() {
     const examplePlayers = [
-        { position: 'TOP', index: 0, name: 'TheShy', tier: '8.00' },
-        { position: 'TOP', index: 1, name: 'Kiin', tier: '7.00' },
-        { position: 'JUNGLE', index: 0, name: 'Canyon', tier: '9.00' },
-        { position: 'JUNGLE', index: 1, name: 'Oner', tier: '8.00' },
-        { position: 'MID', index: 0, name: 'Faker', tier: '9.00' },
-        { position: 'MID', index: 1, name: 'Chovy', tier: '9.00' },
-        { position: 'ADC', index: 0, name: 'Gumayusi', tier: '8.00' },
-        { position: 'ADC', index: 1, name: 'Viper', tier: '8.00' },
-        { position: 'SUPPORT', index: 0, name: 'Keria', tier: '9.00' },
-        { position: 'SUPPORT', index: 1, name: 'Lehends', tier: '7.00' }
+        { name: 'TheShy', tier: '8.00', positions: ['TOP'] },
+        { name: 'Kiin', tier: '7.00', positions: ['TOP', 'MID'] },
+        { name: 'Canyon', tier: '9.00', positions: ['JUNGLE'] },
+        { name: 'Oner', tier: '8.00', positions: ['JUNGLE'] },
+        { name: 'Faker', tier: '9.00', positions: ['MID'] },
+        { name: 'Chovy', tier: '9.00', positions: ['MID', 'ADC'] },
+        { name: 'Gumayusi', tier: '8.00', positions: ['ADC'] },
+        { name: 'Viper', tier: '8.00', positions: ['ADC', 'MID'] },
+        { name: 'Keria', tier: '9.00', positions: ['SUPPORT'] },
+        { name: 'Lehends', tier: '7.00', positions: ['SUPPORT'] }
     ];
 
-    examplePlayers.forEach(player => {
-        const nameInput = document.querySelector(
-            `.player-name[data-position="${player.position}"][data-index="${player.index}"]`
-        );
-        const tierSelect = document.querySelector(
-            `.player-tier[data-position="${player.position}"][data-index="${player.index}"]`
-        );
+    examplePlayers.forEach((player, i) => {
+        const nameInput = document.querySelector(`.player-name[data-player="${i}"]`);
+        const tierSelect = document.querySelector(`.player-tier[data-player="${i}"]`);
         if (nameInput) nameInput.value = player.name;
         if (tierSelect) tierSelect.value = player.tier;
+
+        player.positions.forEach(pos => {
+            const label = document.querySelector(`.position-check-label[data-player="${i}"][data-pos="${pos}"]`);
+            if (label) {
+                const checkbox = label.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = true;
+                    label.classList.add('checked');
+                }
+            }
+        });
     });
 }
 
 function getPlayersFromInputs() {
-    const players = {};
+    const players = [];
 
-    POSITIONS.forEach(position => {
-        players[position] = [];
-        for (let i = 0; i < 2; i++) {
-            const nameInput = document.querySelector(
-                `.player-name[data-position="${position}"][data-index="${i}"]`
-            );
-            const tierSelect = document.querySelector(
-                `.player-tier[data-position="${position}"][data-index="${i}"]`
-            );
+    for (let i = 0; i < 10; i++) {
+        const nameInput = document.querySelector(`.player-name[data-player="${i}"]`);
+        const tierSelect = document.querySelector(`.player-tier[data-player="${i}"]`);
 
-            players[position].push({
-                name: nameInput.value.trim(),
-                tier: parseFloat(tierSelect.value),
-                position: position
-            });
-        }
-    });
+        const positions = [];
+        document.querySelectorAll(`.position-check[data-player="${i}"]:checked`).forEach(cb => {
+            positions.push(cb.dataset.pos);
+        });
+
+        players.push({
+            name: nameInput ? nameInput.value.trim() : '',
+            tier: tierSelect ? parseFloat(tierSelect.value) : 4.0,
+            positions: positions
+        });
+    }
 
     return players;
 }
 
 function validatePlayers(players) {
-    for (let position of POSITIONS) {
-        for (let player of players[position]) {
-            if (!player.name) return false;
+    for (let i = 0; i < players.length; i++) {
+        if (!players[i].name) {
+            return `Player ${i + 1}의 닉네임을 입력해주세요!`;
+        }
+        if (players[i].positions.length === 0) {
+            return `${players[i].name}의 가능 포지션을 최소 1개 선택해주세요!`;
         }
     }
-    return true;
+
+    // 각 포지션에 최소 2명 이상 가능한지 확인
+    for (const pos of POSITIONS) {
+        const count = players.filter(p => p.positions.includes(pos)).length;
+        if (count < 2) {
+            const posName = { TOP: '탑', JUNGLE: '정글', MID: '미드', ADC: '원딜', SUPPORT: '서포터' }[pos];
+            return `배정 불가: ${posName}(${pos}) 가능한 인원이 ${count}명입니다. 최소 2명 필요합니다. 포지션 선택을 수정해주세요.`;
+        }
+    }
+
+    return null; // 유효
+}
+
+// 이분 매칭(backtracking)으로 5명에게 5개 포지션 배정
+function tryAssignPositions(team) {
+    // 가능 포지션이 적은 순서로 정렬 (greedy heuristic)
+    const sorted = team.map((p, i) => ({ player: p, idx: i }))
+        .sort((a, b) => a.player.positions.length - b.player.positions.length);
+
+    const assigned = {}; // position -> player index in team
+    const playerPos = new Array(team.length).fill(null); // player index -> position
+
+    function backtrack(sortedIdx) {
+        if (sortedIdx === sorted.length) {
+            return true; // 모든 플레이어 배정 완료
+        }
+
+        const { player, idx } = sorted[sortedIdx];
+        for (const pos of player.positions) {
+            if (!(pos in assigned)) {
+                assigned[pos] = idx;
+                playerPos[idx] = pos;
+                if (backtrack(sortedIdx + 1)) return true;
+                delete assigned[pos];
+                playerPos[idx] = null;
+            }
+        }
+        return false;
+    }
+
+    if (backtrack(0)) {
+        // 배정 결과 적용
+        team.forEach((player, i) => {
+            player.assignedPosition = playerPos[i];
+            // 하위 호환: position 필드도 설정
+            player.position = playerPos[i];
+        });
+        return true;
+    }
+    return false;
+}
+
+function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
 
 function randomAssign(players) {
-    const teamA = [];
-    const teamB = [];
+    // 최대 1000번 랜덤 셔플 시도
+    for (let attempt = 0; attempt < 1000; attempt++) {
+        const shuffled = shuffleArray(players);
+        const teamA = shuffled.slice(0, 5).map(p => ({ ...p }));
+        const teamB = shuffled.slice(5, 10).map(p => ({ ...p }));
 
-    POSITIONS.forEach(position => {
-        const [p1, p2] = players[position];
-        if (Math.random() < 0.5) {
-            teamA.push(p1);
-            teamB.push(p2);
-        } else {
-            teamA.push(p2);
-            teamB.push(p1);
+        if (tryAssignPositions(teamA) && tryAssignPositions(teamB)) {
+            return { teamA, teamB };
         }
-    });
+    }
 
-    return { teamA, teamB };
+    alert('배정 실패: 현재 포지션 조합으로는 유효한 팀 배정을 찾을 수 없습니다. 포지션 선택을 수정해주세요.');
+    return null;
 }
 
 function balancedAssign(players) {
     let bestAssignment = null;
     let bestScore = Infinity;
 
-    for (let mask = 0; mask < 32; mask++) {
-        const teamA = [];
-        const teamB = [];
+    // C(10,5) = 252개 조합 열거
+    const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-        POSITIONS.forEach((position, idx) => {
-            const [p1, p2] = players[position];
-            if ((mask >> idx) & 1) {
-                teamA.push(p1);
-                teamB.push(p2);
-            } else {
-                teamA.push(p2);
-                teamB.push(p1);
+    function combinations(arr, k) {
+        const result = [];
+        function helper(start, combo) {
+            if (combo.length === k) {
+                result.push([...combo]);
+                return;
             }
-        });
+            for (let i = start; i < arr.length; i++) {
+                combo.push(arr[i]);
+                helper(i + 1, combo);
+                combo.pop();
+            }
+        }
+        helper(0, []);
+        return result;
+    }
 
-        const score = calculateBalanceScore(teamA, teamB);
+    const combos = combinations(indices, 5);
+
+    for (const teamAIndices of combos) {
+        const teamBIndices = indices.filter(i => !teamAIndices.includes(i));
+
+        const teamA = teamAIndices.map(i => ({ ...players[i] }));
+        const teamB = teamBIndices.map(i => ({ ...players[i] }));
+
+        if (!tryAssignPositions(teamA) || !tryAssignPositions(teamB)) {
+            continue;
+        }
+
+        const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
+        const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
+        const score = Math.abs(scoreA - scoreB);
 
         if (score < bestScore) {
             bestScore = score;
@@ -780,22 +943,34 @@ function balancedAssign(players) {
         }
     }
 
+    if (!bestAssignment) {
+        alert('배정 실패: 현재 포지션 조합으로는 유효한 팀 배정을 찾을 수 없습니다. 포지션 선택을 수정해주세요.');
+        return null;
+    }
+
     return bestAssignment;
 }
 
-function calculateBalanceScore(teamA, teamB) {
-    const totalA = teamA.reduce((sum, p) => sum + p.tier, 0);
-    const totalB = teamB.reduce((sum, p) => sum + p.tier, 0);
-    const totalDiff = Math.abs(totalA - totalB);
+function renderRoster(rosterEl, team) {
+    rosterEl.innerHTML = '';
+    // 포지션 순서대로 정렬
+    const posOrder = { TOP: 0, JUNGLE: 1, MID: 2, ADC: 3, SUPPORT: 4 };
+    const sorted = [...team].sort((a, b) => posOrder[a.assignedPosition] - posOrder[b.assignedPosition]);
 
-    let positionDiff = 0;
-    POSITIONS.forEach((position, idx) => {
-        const tierA = teamA[idx].tier;
-        const tierB = teamB[idx].tier;
-        positionDiff += Math.abs(tierA - tierB);
+    sorted.forEach(player => {
+        const posShort = { TOP: 'TOP', JUNGLE: 'JG', MID: 'MID', ADC: 'ADC', SUPPORT: 'SUP' };
+        const availPosStr = player.positions.map(p => posShort[p] || p).join('/');
+        rosterEl.innerHTML += `
+            <div class="roster-item">
+                <span class="position">${player.assignedPosition}</span>
+                <div class="roster-name-area">
+                    <span class="name">${player.name}</span>
+                    <span class="available-positions">${availPosStr}</span>
+                </div>
+                <span class="tier">${scoreToTierDisplay(player.tier)}</span>
+            </div>
+        `;
     });
-
-    return totalDiff * 10 + positionDiff;
 }
 
 function displayTeamResult(teams) {
@@ -809,29 +984,8 @@ function displayTeamResult(teams) {
     // localStorage에 저장
     saveGameState();
 
-    const teamARoster = document.getElementById('team-a-roster');
-    teamARoster.innerHTML = '';
-    teamA.forEach(player => {
-        teamARoster.innerHTML += `
-            <div class="roster-item">
-                <span class="position">${player.position}</span>
-                <span class="name">${player.name}</span>
-                <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-            </div>
-        `;
-    });
-
-    const teamBRoster = document.getElementById('team-b-roster');
-    teamBRoster.innerHTML = '';
-    teamB.forEach(player => {
-        teamBRoster.innerHTML += `
-            <div class="roster-item">
-                <span class="position">${player.position}</span>
-                <span class="name">${player.name}</span>
-                <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-            </div>
-        `;
-    });
+    renderRoster(document.getElementById('team-a-roster'), teamA);
+    renderRoster(document.getElementById('team-b-roster'), teamB);
 
     const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
     const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
@@ -1351,30 +1505,39 @@ function displayGameStateFromStorage() {
 
     const teamARoster = document.getElementById('team-a-roster');
     if (teamARoster) {
-        teamARoster.innerHTML = '';
-        teamA.forEach(player => {
-            teamARoster.innerHTML += `
-                <div class="roster-item">
-                    <span class="position">${player.position}</span>
-                    <span class="name">${player.name}</span>
-                    <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-                </div>
-            `;
-        });
+        // 새 형식(assignedPosition + positions)이면 renderRoster, 아니면 레거시
+        if (teamA[0] && teamA[0].assignedPosition) {
+            renderRoster(teamARoster, teamA);
+        } else {
+            teamARoster.innerHTML = '';
+            teamA.forEach(player => {
+                teamARoster.innerHTML += `
+                    <div class="roster-item">
+                        <span class="position">${player.position}</span>
+                        <span class="name">${player.name}</span>
+                        <span class="tier">${scoreToTierDisplay(player.tier)}</span>
+                    </div>
+                `;
+            });
+        }
     }
 
     const teamBRoster = document.getElementById('team-b-roster');
     if (teamBRoster) {
-        teamBRoster.innerHTML = '';
-        teamB.forEach(player => {
-            teamBRoster.innerHTML += `
-                <div class="roster-item">
-                    <span class="position">${player.position}</span>
-                    <span class="name">${player.name}</span>
-                    <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-                </div>
-            `;
-        });
+        if (teamB[0] && teamB[0].assignedPosition) {
+            renderRoster(teamBRoster, teamB);
+        } else {
+            teamBRoster.innerHTML = '';
+            teamB.forEach(player => {
+                teamBRoster.innerHTML += `
+                    <div class="roster-item">
+                        <span class="position">${player.position}</span>
+                        <span class="name">${player.name}</span>
+                        <span class="tier">${scoreToTierDisplay(player.tier)}</span>
+                    </div>
+                `;
+            });
+        }
     }
 
     const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);

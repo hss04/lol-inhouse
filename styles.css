@@ -151,27 +151,28 @@ header h1 {
     border-color: #667eea;
 }
 
-/* ==================== Position Group & Player Inputs ==================== */
+/* ==================== Player Card (Multi-Position) ==================== */
 
-.position-group {
+.player-card {
     background: white;
-    padding: 16px;
+    padding: 14px 16px;
     border-radius: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border-left: 4px solid #667eea;
 }
 
-.player-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.player-card-header {
+    font-weight: 700;
+    color: #1e3c72;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
 }
 
-.player-input {
+.player-card-row {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 100%;
+    margin-bottom: 10px;
 }
 
 .player-name {
@@ -206,6 +207,77 @@ header h1 {
 .player-tier:focus {
     outline: none;
     border-color: #667eea;
+}
+
+/* Position Checkboxes */
+.position-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.position-check-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+    min-height: 36px;
+}
+
+.position-check-label:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.position-check-label input[type="checkbox"] {
+    display: none;
+}
+
+.position-check-label.checked {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* Result: available positions tag */
+.available-positions {
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.roster-item-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.roster-name-area {
+    flex: 1;
+    min-width: 0;
+}
+
+.roster-name-area .name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ==================== Button Group ==================== */
@@ -888,26 +960,25 @@ header h1 {
         gap: 20px;
     }
 
-    /* Player inputs: horizontal per position */
-    .player-inputs {
+    /* Player card: horizontal layout */
+    .player-card-row {
         flex-direction: row;
-        gap: 14px;
+        gap: 12px;
     }
 
-    .player-input {
-        flex-direction: row;
-        flex: 1;
-        min-width: 0;
-    }
-
-    .player-name {
+    .player-card-row .player-name {
         flex: 1;
         width: auto;
     }
 
-    .player-tier {
+    .player-card-row .player-tier {
         width: auto;
         min-width: 140px;
+    }
+
+    .position-check-label {
+        font-size: 0.85rem;
+        padding: 6px 12px;
     }
 
     /* Buttons: horizontal */
@@ -1083,17 +1154,13 @@ header h1 {
         margin-bottom: 15px;
     }
 
-    .position-group {
-        padding: 20px;
-        margin-bottom: 15px;
+    .player-card {
+        padding: 18px 20px;
+        margin-bottom: 12px;
     }
 
-    .player-input {
-        min-width: 250px;
-    }
-
-    .player-inputs {
-        gap: 15px;
+    .player-card-row {
+        gap: 14px;
     }
 
     .btn {
