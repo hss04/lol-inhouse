@@ -951,53 +951,261 @@ function balancedAssign(players) {
     return bestAssignment;
 }
 
-function renderRoster(rosterEl, team) {
-    rosterEl.innerHTML = '';
-    // 포지션 순서대로 정렬
-    const posOrder = { TOP: 0, JUNGLE: 1, MID: 2, ADC: 3, SUPPORT: 4 };
-    const sorted = [...team].sort((a, b) => posOrder[a.assignedPosition] - posOrder[b.assignedPosition]);
+// ==================== 드래그 앤 드롭 결과 편집 ====================
 
-    sorted.forEach(player => {
-        const posShort = { TOP: 'TOP', JUNGLE: 'JG', MID: 'MID', ADC: 'ADC', SUPPORT: 'SUP' };
-        const availPosStr = player.positions.map(p => posShort[p] || p).join('/');
-        rosterEl.innerHTML += `
-            <div class="roster-item">
-                <span class="position">${player.assignedPosition}</span>
-                <div class="roster-name-area">
-                    <span class="name">${player.name}</span>
-                    <span class="available-positions">${availPosStr}</span>
+const POS_SHORT = { TOP: 'TOP', JUNGLE: 'JG', MID: 'MID', ADC: 'ADC', SUPPORT: 'SUP' };
+
+function renderDraggableRoster(rosterEl, team, teamKey) {
+    rosterEl.innerHTML = '';
+
+    POSITIONS.forEach(pos => {
+        const player = team.find(p => (p.assignedPosition || p.position) === pos);
+        const slot = document.createElement('div');
+        slot.className = 'roster-slot';
+        slot.dataset.team = teamKey;
+        slot.dataset.pos = pos;
+
+        if (player) {
+            const availPosStr = (player.positions || []).map(p => POS_SHORT[p] || p).join('/');
+            slot.innerHTML = `
+                <div class="roster-item" draggable="true" data-team="${teamKey}" data-pos="${pos}">
+                    <span class="position">${pos}</span>
+                    <div class="roster-name-area">
+                        <span class="name">${player.name}</span>
+                        <span class="available-positions">${availPosStr}</span>
+                    </div>
+                    <span class="tier">${scoreToTierDisplay(player.tier)}</span>
                 </div>
-                <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-            </div>
-        `;
+            `;
+        }
+
+        rosterEl.appendChild(slot);
     });
 }
+
+function updateScoreDisplay() {
+    const teamA = gameState.teams.a;
+    const teamB = gameState.teams.b;
+    const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
+    const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
+    const scoreAEl = document.getElementById('team-a-score');
+    const scoreBEl = document.getElementById('team-b-score');
+    if (scoreAEl) scoreAEl.textContent = scoreA.toFixed(2);
+    if (scoreBEl) scoreBEl.textContent = scoreB.toFixed(2);
+}
+
+function renderAllRosters() {
+    const rosterA = document.getElementById('team-a-roster');
+    const rosterB = document.getElementById('team-b-roster');
+    if (rosterA) renderDraggableRoster(rosterA, gameState.teams.a, 'a');
+    if (rosterB) renderDraggableRoster(rosterB, gameState.teams.b, 'b');
+    updateScoreDisplay();
+    initDragAndDrop();
+}
+
+function swapPlayers(srcTeam, srcPos, dstTeam, dstPos) {
+    if (srcTeam === dstTeam && srcPos === dstPos) return;
+
+    const srcArr = gameState.teams[srcTeam];
+    const dstArr = gameState.teams[dstTeam];
+    const srcIdx = srcArr.findIndex(p => (p.assignedPosition || p.position) === srcPos);
+    const dstIdx = dstArr.findIndex(p => (p.assignedPosition || p.position) === dstPos);
+
+    if (srcIdx === -1) return;
+
+    if (srcTeam === dstTeam) {
+        // 같은 팀 내 스왑
+        if (dstIdx !== -1) {
+            // 서로 교환
+            srcArr[srcIdx].assignedPosition = dstPos;
+            srcArr[srcIdx].position = dstPos;
+            srcArr[dstIdx].assignedPosition = srcPos;
+            srcArr[dstIdx].position = srcPos;
+        } else {
+            srcArr[srcIdx].assignedPosition = dstPos;
+            srcArr[srcIdx].position = dstPos;
+        }
+    } else {
+        // 팀 간 스왑
+        const srcPlayer = srcArr[srcIdx];
+        srcPlayer.assignedPosition = dstPos;
+        srcPlayer.position = dstPos;
+
+        if (dstIdx !== -1) {
+            const dstPlayer = dstArr[dstIdx];
+            dstPlayer.assignedPosition = srcPos;
+            dstPlayer.position = srcPos;
+            // 배열에서 교환
+            srcArr[srcIdx] = dstPlayer;
+            dstArr[dstIdx] = srcPlayer;
+        } else {
+            srcArr.splice(srcIdx, 1);
+            dstArr.push(srcPlayer);
+        }
+    }
+
+    saveGameState();
+    renderAllRosters();
+}
+
+// HTML5 Drag & Drop
+let dragSrcTeam = null;
+let dragSrcPos = null;
+
+function initDragAndDrop() {
+    const resultEl = document.getElementById('team-result');
+    if (!resultEl) return;
+
+    // Draggable items
+    resultEl.querySelectorAll('.roster-item[draggable]').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            dragSrcTeam = item.dataset.team;
+            dragSrcPos = item.dataset.pos;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            resultEl.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+    });
+
+    // Drop slots
+    resultEl.querySelectorAll('.roster-slot').forEach(slot => {
+        slot.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            slot.classList.add('drag-over');
+        });
+
+        slot.addEventListener('dragleave', () => {
+            slot.classList.remove('drag-over');
+        });
+
+        slot.addEventListener('drop', (e) => {
+            e.preventDefault();
+            slot.classList.remove('drag-over');
+            if (dragSrcTeam !== null && dragSrcPos !== null) {
+                swapPlayers(dragSrcTeam, dragSrcPos, slot.dataset.team, slot.dataset.pos);
+            }
+            dragSrcTeam = null;
+            dragSrcPos = null;
+        });
+    });
+
+    // Touch drag support
+    initTouchDrag(resultEl);
+}
+
+// ==================== 터치 드래그 ====================
+
+let touchDragState = null;
+
+function initTouchDrag(resultEl) {
+    resultEl.querySelectorAll('.roster-item[draggable]').forEach(item => {
+        item.addEventListener('touchstart', handleTouchStart, { passive: false });
+    });
+}
+
+function handleTouchStart(e) {
+    const item = e.currentTarget;
+    const touch = e.touches[0];
+
+    // 길게 누르기 방지를 위해 약간의 딜레이 없이 바로 시작
+    touchDragState = {
+        srcTeam: item.dataset.team,
+        srcPos: item.dataset.pos,
+        ghost: null,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        moved: false,
+        item: item
+    };
+
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+}
+
+function handleTouchMove(e) {
+    if (!touchDragState) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchDragState.startX;
+    const dy = touch.clientY - touchDragState.startY;
+
+    // 최소 이동 거리 체크
+    if (!touchDragState.moved && Math.abs(dx) + Math.abs(dy) < 10) return;
+    touchDragState.moved = true;
+
+    // 고스트 생성
+    if (!touchDragState.ghost) {
+        touchDragState.item.classList.add('dragging');
+        const ghost = document.createElement('div');
+        ghost.className = 'drag-ghost';
+        const nameEl = touchDragState.item.querySelector('.name');
+        const posEl = touchDragState.item.querySelector('.position');
+        ghost.textContent = `${posEl ? posEl.textContent : ''} ${nameEl ? nameEl.textContent : ''}`;
+        document.body.appendChild(ghost);
+        touchDragState.ghost = ghost;
+    }
+
+    touchDragState.ghost.style.left = (touch.clientX - 60) + 'px';
+    touchDragState.ghost.style.top = (touch.clientY - 24) + 'px';
+
+    // 하이라이트
+    document.querySelectorAll('.roster-slot').forEach(s => s.classList.remove('drag-over'));
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (target) {
+        const slot = target.closest('.roster-slot');
+        if (slot) slot.classList.add('drag-over');
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!touchDragState) return;
+
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
+
+    if (touchDragState.ghost) {
+        touchDragState.ghost.remove();
+    }
+    touchDragState.item.classList.remove('dragging');
+    document.querySelectorAll('.roster-slot').forEach(s => s.classList.remove('drag-over'));
+
+    if (touchDragState.moved) {
+        const touch = e.changedTouches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (target) {
+            const slot = target.closest('.roster-slot');
+            if (slot) {
+                swapPlayers(touchDragState.srcTeam, touchDragState.srcPos, slot.dataset.team, slot.dataset.pos);
+            }
+        }
+    }
+
+    touchDragState = null;
+}
+
+// ==================== 결과 표시 ====================
 
 function displayTeamResult(teams) {
     const { teamA, teamB } = teams;
 
-    // 전역 상태 저장
     gameState.teams.a = teamA;
     gameState.teams.b = teamB;
     gameState.assigned = true;
 
-    // localStorage에 저장
     saveGameState();
 
-    renderRoster(document.getElementById('team-a-roster'), teamA);
-    renderRoster(document.getElementById('team-b-roster'), teamB);
-
-    const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
-    const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
-
-    document.getElementById('team-a-score').textContent = scoreA.toFixed(2);
-    document.getElementById('team-b-score').textContent = scoreB.toFixed(2);
-
-    // 팀 이름 표시
     document.querySelector('.team-a-header').textContent = gameState.teamNames.a;
     document.querySelector('.team-b-header').textContent = gameState.teamNames.b;
 
     document.getElementById('team-result').style.display = 'block';
+    renderAllRosters();
 }
 
 // ==================== 피어리스 밴픽 기능 ====================
@@ -1503,50 +1711,15 @@ function displayGameStateFromStorage() {
     const teamA = gameState.teams.a;
     const teamB = gameState.teams.b;
 
-    const teamARoster = document.getElementById('team-a-roster');
-    if (teamARoster) {
-        // 새 형식(assignedPosition + positions)이면 renderRoster, 아니면 레거시
-        if (teamA[0] && teamA[0].assignedPosition) {
-            renderRoster(teamARoster, teamA);
-        } else {
-            teamARoster.innerHTML = '';
-            teamA.forEach(player => {
-                teamARoster.innerHTML += `
-                    <div class="roster-item">
-                        <span class="position">${player.position}</span>
-                        <span class="name">${player.name}</span>
-                        <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-                    </div>
-                `;
-            });
+    // 레거시 데이터 호환: assignedPosition 없으면 position 복사
+    [...teamA, ...teamB].forEach(p => {
+        if (!p.assignedPosition && p.position) {
+            p.assignedPosition = p.position;
         }
-    }
-
-    const teamBRoster = document.getElementById('team-b-roster');
-    if (teamBRoster) {
-        if (teamB[0] && teamB[0].assignedPosition) {
-            renderRoster(teamBRoster, teamB);
-        } else {
-            teamBRoster.innerHTML = '';
-            teamB.forEach(player => {
-                teamBRoster.innerHTML += `
-                    <div class="roster-item">
-                        <span class="position">${player.position}</span>
-                        <span class="name">${player.name}</span>
-                        <span class="tier">${scoreToTierDisplay(player.tier)}</span>
-                    </div>
-                `;
-            });
+        if (!p.positions) {
+            p.positions = p.position ? [p.position] : [];
         }
-    }
-
-    const scoreA = teamA.reduce((sum, p) => sum + p.tier, 0);
-    const scoreB = teamB.reduce((sum, p) => sum + p.tier, 0);
-
-    const scoreAElem = document.getElementById('team-a-score');
-    const scoreBElem = document.getElementById('team-b-score');
-    if (scoreAElem) scoreAElem.textContent = scoreA.toFixed(2);
-    if (scoreBElem) scoreBElem.textContent = scoreB.toFixed(2);
+    });
 
     // 팀 이름 표시
     const teamAHeader = document.querySelector('.team-a-header');
@@ -1556,6 +1729,8 @@ function displayGameStateFromStorage() {
 
     const resultDiv = document.getElementById('team-result');
     if (resultDiv) resultDiv.style.display = 'block';
+
+    renderAllRosters();
 }
 
 // 하위 호환성

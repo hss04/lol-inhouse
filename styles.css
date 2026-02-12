@@ -401,16 +401,47 @@ header h1 {
     font-weight: 600;
 }
 
+/* Roster Slot (drop zone per position) */
+.roster-slot {
+    min-height: 52px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.roster-slot.drag-over {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.08);
+}
+
+.roster-slot .slot-label {
+    display: none;
+}
+
+/* Roster Item (draggable player card) */
 .roster-item {
     padding: 10px 12px;
     background: #f8f9fa;
     border-radius: 6px;
-    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 8px;
     min-height: 44px;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: opacity 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.roster-item:active {
+    cursor: grabbing;
+}
+
+.roster-item.dragging {
+    opacity: 0.35;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
 .roster-item .position {
@@ -435,6 +466,25 @@ header h1 {
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Touch drag ghost */
+.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.85;
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    background: white;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
     font-weight: 600;
     white-space: nowrap;
 }
